@@ -52,7 +52,7 @@ class HuffmanTree:
         self.coding(self.heap[0], "")
         symbol_model = self.modeling(self.heap[0])
         coded_text = "".join(chain(self.lookup[symbol] for symbol in self.text))
-        coded_text.ljust(len(coded_text) + 8 - len(coded_text) % 8, "0")
+        coded_text = coded_text.ljust(len(coded_text) + 8 - len(coded_text) % 8, "0")
 
         coded_array = array.array('B', list(chain(int(coded_text[i:i + 8], 2) for i in range(0, len(coded_text), 8))))
 
@@ -65,19 +65,15 @@ if __name__ == '__main__':
     parser.add_argument("-s", help="specify character-based (default) or word-based encoding", choices=["char", "word"])
     args = parser.parse_args()
 
-    s = time.time()
-
     root, _ = os.path.splitext(args.infile)
     encoding_model = "char" if not args.s else args.s
 
-    text = open(args.infile, encoding="utf8").read() + "\a"
+    text = open(args.infile, encoding="utf8").read() + "\x07"
     if encoding_model == "word":
         text = re.compile(r"[a-z]+|[^a-z]", re.I).findall(text)
 
     tree = HuffmanTree(text)
     encoded_array, model = tree.encoded()
 
-    print(time.time() - s)
-
-    encoded_array.tofile(open(root + ".bin", "wb"))
-    pickle.dump(model, open(root + "-symbol-model.pkl", "wb"))
+    encoded_array.tofile(open(root + ".bin", mode="wb"))
+    pickle.dump(model, open(root + "-symbol-model.pkl", mode="wb"))
