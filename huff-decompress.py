@@ -1,22 +1,16 @@
 import argparse
 import os
 import pickle
+import time
 
 from itertools import chain
-
-
-class Node:
-    def __init__(self, symbol, frequency):
-        self.symbol = symbol
-        self.frequency = frequency
-        self.left = None
-        self.right = None
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Huffman Coding Decompression")
     parser.add_argument("bin", help="bin file to be decompressed")
     args = parser.parse_args()
+
+    s = time.time()
 
     coded_bytes = open(args.bin, 'rb').read()
     coded_text = "".join(chain('{0:0b}'.format(byte).zfill(8) for byte in coded_bytes))
@@ -25,14 +19,16 @@ if __name__ == '__main__':
     model = pickle.load(open(root + "-symbol-model.pkl", 'rb'))
 
     text = ""
-    node = model
+    current = model
     for binary in coded_text:
-        node = node.left if binary == "0" else node.right
+        current = current[0] if binary == "0" else current[1]
 
-        if node.symbol == "□":
+        if current == '\a':
             break
-        elif node.symbol:
-            text += node.symbol
-            node = model
+        elif isinstance(current, str):
+            text += current
+            current = model
+
+    print(time.time() - s)
 
     open(root + "-decompressed.txt", 'w').write(text)

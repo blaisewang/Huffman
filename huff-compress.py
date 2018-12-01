@@ -5,6 +5,7 @@ import operator
 import os
 import pickle
 import re
+import time
 
 from itertools import chain
 
@@ -19,7 +20,7 @@ class Node:
 
 class HuffmanTree:
     def __init__(self, plain_text):
-        self.model = {}
+        self.lookup = {}
         self.text = plain_text
         self.symbols = collections.Counter(self.text)
         self.symbols = sorted(self.symbols.items(), key=operator.itemgetter(1))
@@ -35,23 +36,27 @@ class HuffmanTree:
             index = next((i for i, n in enumerate(self.heap) if n.frequency >= merged.frequency), -1)
             self.heap.insert(index if index != -1 else len(self.heap), merged)
 
-        self.modeling(self.heap[0], "")
-
-    def modeling(self, node, code):
+    def coding(self, node, code):
         if node.symbol:
-            self.model[node.symbol] = code
+            self.lookup[node.symbol] = code
             return
+        self.coding(node.left, code + "0")
+        self.coding(node.right, code + "1")
 
-        self.modeling(node.left, code + "0")
-        self.modeling(node.right, code + "1")
+    def modeling(self, node):
+        if node.symbol:
+            return node.symbol
+        return {0: self.modeling(node.left), 1: self.modeling(node.right)}
 
     def encoded(self):
-        coded_text = "".join(chain(self.model[symbol] for symbol in self.text))
+        self.coding(self.heap[0], "")
+        symbol_model = self.modeling(self.heap[0])
+        coded_text = "".join(chain(self.lookup[symbol] for symbol in self.text))
         coded_text.ljust(len(coded_text) + 8 - len(coded_text) % 8, "0")
 
         coded_array = array.array('B', list(chain(int(coded_text[i:i + 8], 2) for i in range(0, len(coded_text), 8))))
 
-        return coded_array, self.heap[0]
+        return coded_array, symbol_model
 
 
 if __name__ == '__main__':
@@ -60,15 +65,19 @@ if __name__ == '__main__':
     parser.add_argument("-s", help="specify character-based (default) or word-based encoding", choices=["char", "word"])
     args = parser.parse_args()
 
-    root, _ = os.path.splitext(args.infile)
-    symbol_model = "char" if not args.s else args.s
+    s = time.time()
 
-    text = open(args.infile, encoding="utf8").read() + "□"
-    if symbol_model == "word":
+    root, _ = os.path.splitext(args.infile)
+    encoding_model = "char" if not args.s else args.s
+
+    text = open(args.infile, encoding="utf8").read() + "\a"
+    if encoding_model == "word":
         text = re.compile(r"[a-z]+|[^a-z]", re.I).findall(text)
 
     tree = HuffmanTree(text)
     encoded_array, model = tree.encoded()
+
+    print(time.time() - s)
 
     encoded_array.tofile(open(root + ".bin", "wb"))
     pickle.dump(model, open(root + "-symbol-model.pkl", "wb"))
