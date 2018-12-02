@@ -42,7 +42,17 @@ class HuffmanTree:
             index = next((i for i, n in enumerate(self.heap) if n.frequency >= merged.frequency), -1)
             self.heap.insert(index if index != -1 else len(self.heap), merged)
 
-    # Huffman tree to lookup dictionary
+        # Huffman tree to symbol model dictionary
+        self.model = self.modeling(self.heap[0])
+
+    # tree traversal, return dictionary
+    def modeling(self, node):
+        if node.symbol:
+            # symbol found
+            return node.symbol
+        return {0: self.modeling(node.left), 1: self.modeling(node.right)}
+
+    # tree traversal to encode
     def encoding(self, node, code):
         if node.symbol:
             # symbol found
@@ -51,14 +61,8 @@ class HuffmanTree:
         self.encoding(node.left, code + "0")
         self.encoding(node.right, code + "1")
 
-    # Huffman tree to model dictionary
-    def modeling(self, node):
-        if node.symbol:
-            # symbol found
-            return node.symbol
-        return {0: self.modeling(node.left), 1: self.modeling(node.right)}
-
     def encoded(self):
+        # lookup dictionary based on the tree
         self.encoding(self.heap[0], "")
         # text to encoded text
         coded_text = "".join(chain(self.lookup[symbol] for symbol in self.text))
@@ -68,7 +72,7 @@ class HuffmanTree:
         byte_array = array('B', list(chain(int(coded_text[i:i + 8], 2) for i in range(0, len(coded_text), 8))))
 
         # return bin and model files
-        return byte_array, self.modeling(self.heap[0])
+        return byte_array, self.model
 
 
 if __name__ == '__main__':
