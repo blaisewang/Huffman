@@ -4,6 +4,7 @@ import operator
 import os
 import pickle
 import re
+import time
 
 from array import array
 from itertools import chain
@@ -91,8 +92,11 @@ if __name__ == '__main__':
     if encoding_model == "word":
         text = re.compile(r"[a-z]+|[^a-z]", re.I).findall(text)
 
+    start = time.time()
     # Huffman tree construction
     tree = HuffmanTree(text)
+    print("Cost of symbol model build:", time.time() - start, "s")
+
     coded_array, model = tree.encoded()
 
     # bin file store
