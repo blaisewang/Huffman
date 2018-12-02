@@ -71,8 +71,7 @@ class HuffmanTree:
         # encoded text to byte array
         byte_array = array('B', list(chain(int(coded_text[i:i + 8], 2) for i in range(0, len(coded_text), 8))))
 
-        # return bin and model files
-        return byte_array, self.model
+        return byte_array
 
 
 if __name__ == '__main__':
@@ -99,14 +98,17 @@ if __name__ == '__main__':
     start = time.time()
     # Huffman tree construction
     tree = HuffmanTree(text)
-    print("Cost of symbol model build:", time.time() - start, "s")
+    print("Cost of symbol model building:", time.time() - start, "s")
 
-    coded_array, model = tree.encoded()
+    start = time.time()
+    coded_array = tree.encoded()
+    print("Cost of encoding:", time.time() - start, "s")
 
     # bin file store
     with open(root + ".bin", mode="wb") as file:
         coded_array.tofile(file)
 
     # model file store
+    model = tree.model
     with open(root + "-symbol-model.pkl", mode="wb") as file:
         pickle.dump(model, file)
