@@ -1,6 +1,7 @@
 import argparse
 import os
 import pickle
+import time
 
 from itertools import chain
 
@@ -13,6 +14,8 @@ if __name__ == '__main__':
     # bin file read
     with open(args.bin, mode="rb") as file:
         coded_bytes = file.read()
+
+    start = time.time()
 
     # byte to string
     coded_text = "".join(chain("{0:0b}".format(byte).zfill(8) for byte in coded_bytes))
@@ -35,6 +38,8 @@ if __name__ == '__main__':
             # leaf reached
             text += node
             node = model
+
+    print("Cost of decoding:", time.time() - start, "s")
 
     # decompressed text store
     with open(root + "-decompressed.txt", mode="w", encoding="utf-8") as file:
