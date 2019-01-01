@@ -67,9 +67,11 @@ class HuffmanTree:
         # text to encoded text
         coded_text = "".join(chain(self.lookup[symbol] for symbol in self.text))
         # 0 padding
-        coded_text = coded_text.ljust(len(coded_text) + 8 - len(coded_text) % 8, "0")
+        text_length = len(coded_text)
+        coded_text = coded_text.ljust(text_length + 8 - text_length % 8, "0")
         # encoded text to byte array
-        byte_array = array('B', list(chain(int(coded_text[i:i + 8], 2) for i in range(0, len(coded_text), 8))))
+        text_length = len(coded_text)
+        byte_array = array('B', list(chain(int(coded_text[i:i + 8], 2) for i in range(0, text_length, 8))))
 
         return byte_array
 
