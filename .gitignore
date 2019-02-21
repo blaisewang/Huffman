@@ -103,6 +103,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+test-harness.py
+
 /.idea
 
 *.txt
